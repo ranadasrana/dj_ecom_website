@@ -1,4 +1,11 @@
 from django.views import generic
+from django.core.paginator import(
+    PageNotAnInteger,
+    EmptyPage,
+    InvalidPage,
+    Paginator
+)
+
 from .models import(
     Category,
     Product, 
@@ -40,10 +47,36 @@ class CategoryDetails(generic.DetailView):
         context['products']=self.get_object().products.all()
         return context
     
+class CustoomPaginator:
+    def __init__(self, request, queryset, paginted_by) -> None:
+        self.paginator = Paginator(queryset, paginted_by)
+        self.paginted_by = paginted_by
+        self.queryset = queryset
+        self.page = request.GET.get('page', 1)
+
+    def get_queryset(self):
+        try:
+            queryset = self.paginator.page(self.page)
+        except PageNotAnInteger:
+            queryset = self.paginator.page(1)
+        except EmptyPage:
+            queryset = self.paginator.page(1)
+        except InvalidPage:
+            queryset = self.paginator.page(1)
+            
+        return queryset
+    
 class ProductList(generic.ListView):
     model=Product
     template_name='product/product-list.html'
     context_object_name='object_list'
+    paginate_by = 5
 
     def get_context_data(self, **kwargs):
-        return super().get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
+        page_obj = CustoomPaginator(self.request, self.get_queryset(), self.paginate_by)
+        queryset = page_obj.get_queryset()
+        paginator = page_obj.paginator
+        context['object_list'] = queryset
+        context['paginator'] = paginator
+        return context
