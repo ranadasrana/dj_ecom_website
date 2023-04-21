@@ -8,6 +8,8 @@ from django.core.paginator import(
     Paginator
 )
 
+from cart.carts import Cart
+
 from .models import(
     Category,
     Product, 
@@ -73,6 +75,8 @@ class ProductList(generic.ListView):
     template_name='product/product-list.html'
     context_object_name='object_list'
     paginate_by = 5
+
+    
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
